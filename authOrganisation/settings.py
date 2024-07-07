@@ -30,7 +30,7 @@ SECRET_KEY = env("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -93,9 +93,9 @@ DATABASES = {
 
 # Postgres Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-# DATABASES = {
-#     'default': dj_database_url.config(default=env('DATABASE_URL'))
-# }
+DATABASES = {
+    'default': dj_database_url.config(default=env('DATABASE_URL'))
+}
 
 # JWT token settings
 SIMPLE_JWT = {
