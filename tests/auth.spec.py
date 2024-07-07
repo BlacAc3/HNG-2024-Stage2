@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from rest_framework import status
 from django.test import TestCase
 from rest_framework.test import APIClient
-from .models import CustomUser, Organisation
+from api.models import CustomUser, Organisation
 from django.conf import settings
 
 SECRET_KEY=settings.SECRET_KEY
