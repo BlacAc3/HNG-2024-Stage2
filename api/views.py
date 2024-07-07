@@ -196,16 +196,15 @@ def get_user(request, id):
 @permission_classes([IsAuthenticated])
 def get_organisation(request, orgId):
     user = request.user
-
-    if not Organisation.objects.filter(orgId=orgId).exists():
+    org = Organisation.objects.filter(orgId=orgId, owner=user) | Organisation.objects.filter(members=user, orgId=orgId)
+    if not org.exists():
         data = {
             "status": "Not Found",
             "message": "Organisation not found",
             "statusCode": 404
         }
         return Response(data, status=status.HTTP_404_NOT_FOUND)
-    
-    org =Organisation.objects.get(orgId=orgId)
+    org = org.first()
     data = {
         "orgId":org.orgId,
         "name":org.name,
