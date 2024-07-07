@@ -1,0 +1,16 @@
+{
+    "builds": [{
+        "src": "authOrganisation/wsgi.py",
+        "use": "@vercel/python",
+        "config": { 
+            "maxLambdaSize": "15mb",
+            "installCommand": "pip install -r requirements.txt"
+        }
+    }],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "authOrganisation/wsgi.py"
+        }
+    ]
+}

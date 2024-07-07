@@ -136,6 +136,7 @@ def login_user(request):
             user = None
     except:
         user = None
+        
     if user is None:
         error_json = {
             "status": "Bad request",
@@ -196,21 +197,24 @@ def get_user(request, id):
 @permission_classes([IsAuthenticated])
 def get_organisation(request, orgId):
     user = request.user
-    org = Organisation.objects.filter(orgId=orgId, owner=user) | Organisation.objects.filter(members=user, orgId=orgId)
-    if not org.exists():
+    user_org = Organisation.objects.get(orgId=orgId)
+    if user in user_org.members.all() or user_org.owner == user:
+        org = user_org
+    else:
         data = {
             "status": "Not Found",
             "message": "Organisation not found",
             "statusCode": 404
         }
         return Response(data, status=status.HTTP_404_NOT_FOUND)
-    org = org.first()
+
     data = {
         "orgId":org.orgId,
         "name":org.name,
         "description": org.description,
     }
     new_response = handle_successful_response(data, message="Organisation Retrieved")
+    print(f"Oranisation Details ---> {new_response}") #################################
     return Response (new_response, status=status.HTTP_200_OK)
 
 
@@ -220,14 +224,14 @@ def get_and_create_org(request):
     user = request.user
 
     if request.method == "GET":
-        all_userRelOrganisations= Organisation.objects.filter(owner=user) | Organisation.objects.filter(members=user)
+        all_user_organisations= Organisation.objects.filter(owner=user) | Organisation.objects.filter(members=user)
         
-        if not all_userRelOrganisations.exists():
+        if not all_user_organisations.exists():
             data =handle_successful_response(message="No Organisation Found")
             return Response(data, status=status.HTTP_204_NO_CONTENT)
         
         list=[{}]
-        for org in all_userRelOrganisations:
+        for org in all_user_organisations:
             data_to_append={
                 "orgId": org.orgId,
                 "name": org.name,
@@ -235,7 +239,7 @@ def get_and_create_org(request):
             }
             list.append(data_to_append)
         main_data = {"organisation":list}
-
+        print(f"organisations response ---> {main_data}") #######################
         return Response(main_data, status = status.HTTP_200_OK)
     
 
@@ -271,10 +275,20 @@ def handle_successful_response(data:dict ="", message="") -> dict:
 
 @api_view(["POST"])
 def add_user_to_org(request, orgId):
-    userId = request.data.get("userId")
-    user = CustomUser.objects.get(userId=userId)
-    org = Organisation.objects.get(orgId=orgId)
+    
+    try:
+        userId = request.data.get("userId")
+        user = CustomUser.objects.get(userId=userId)
+        org = Organisation.objects.get(orgId=orgId)
+    except:
+        data ={
+            "status": "Bad Request",
+            "message": "Client error",
+            "statusCode": 400
+        }
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
     org.members.add(user)
+    print(org.members.all())
     org.save()
     data = {
         "status": "success",

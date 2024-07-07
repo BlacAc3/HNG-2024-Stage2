@@ -107,29 +107,45 @@ class AccessControlTestCase(TestCase):
         return response.json()
     
     def test_access_to_organisation(self):
+        # Add user1 to org1
+        self.add_user(self.user1_instance.userId, self.org1.orgId)
+        print(self.org1.members)
+        #Add user2 to org2
+        self.add_user(self.user2_instance.userId, self.org2.orgId)
+
         # User 1 should have access to org1
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
+
         self.login(self.user1_instance.email, self.user1_password)
         response = self.client.get(f'{self.base_url}api/organisations/{self.org1.orgId}')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 404)
         print(f"---User1 has access to Organisation1- 👤1️⃣🔑🏢1️⃣")
         
         # User 1 should  have access to org2
         response = self.client.get(f'{self.base_url}api/organisations/{self.org2.orgId}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(f"---User1 has access to Organisation2- 👤1️⃣🔑🏢2️⃣")
+        print(f"---User1 has no access to Organisation2- 👤1️⃣🔑🏢2️⃣")
         
         # User 2 should have access to org2
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
         self.login(self.user2_instance.email, self.user2_password)
         response = self.client.get(f'{self.base_url}api/organisations/{self.org2.orgId}')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(f"---User2 has access to Organisation1- 👤2️⃣🔑🏢1️⃣")
+        self.assertEqual(response.status_code, 404)
+        print(f"---User2 has no access to Organisation1- 👤2️⃣🔑🏢1️⃣")
         
         # User 2 should have access to org1
         response = self.client.get(f'{self.base_url}api/organisations/{self.org1.orgId}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         print(f"---User2 has access to Organisation2- 👤2️⃣🔑🏢2️⃣")
+
+    def add_user(self, userId, orgId):
+        url =f"http://localhost:8000/api/organisations/{orgId}/users"
+        data = {
+            "userId": userId
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 200)
+        print(f"---Added user to organisation - {response.json()}")
 
 
 

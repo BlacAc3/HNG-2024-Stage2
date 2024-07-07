@@ -1,3 +1,6 @@
 djangorestframework==3.15.2
 djangorestframework_simplejwt==5.3.1
 PyJWT
+django-environ
+dj-database-url
+psycopg2-binary
