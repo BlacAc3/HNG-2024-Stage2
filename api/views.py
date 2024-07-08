@@ -216,7 +216,6 @@ def get_organisation(request, orgId):
         "description": org.description,
     }
     new_response = handle_successful_response(data, message="Organisation Retrieved")
-    print(f"Oranisation Details ---> {new_response}") #################################
     return Response (new_response, status=status.HTTP_200_OK)
 
 
@@ -241,7 +240,6 @@ def get_and_create_org(request):
             }
             list.append(data_to_append)
         main_data = {"organisation":list}
-        print(f"organisations response ---> {main_data}") #######################
         return Response(main_data, status = status.HTTP_200_OK)
     
 
@@ -290,7 +288,6 @@ def add_user_to_org(request, orgId):
         }
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
     org.members.add(user)
-    print(org.members.all())
     org.save()
     data = {
         "status": "success",
