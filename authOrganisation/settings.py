@@ -32,7 +32,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["hng11-stage2-blacac3.vercel.app"]
+ALLOWED_HOSTS = ["*","hng11-stage2-blacac3.vercel.app"]
 
 
 # Application definition

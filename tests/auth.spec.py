@@ -1,3 +1,14 @@
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'authOrganisation.settings')
+import django
+django.setup()
+
+
+
 import unittest
 import requests
 import jwt
@@ -9,8 +20,6 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from api.models import CustomUser, Organisation
 from django.conf import settings
-
-SECRET_KEY=settings.SECRET_KEY
 
 
 class TokenGenerationTestCase(TestCase):
@@ -39,7 +48,7 @@ class TokenGenerationTestCase(TestCase):
         access_token = AccessToken.for_user(self.user)
         str_access_token = str(access_token)
         
-        decoded_token = jwt.decode(str_access_token, SECRET_KEY, algorithms=["HS256"])  # Decode the token
+        decoded_token = jwt.decode(str_access_token, settings.SECRET_KEY, algorithms=["HS256"])  # Decode the token
         # Verify user details in the token
         self.assertEqual(decoded_token['userId'], str(self.user.userId))
         self.user.delete()
@@ -52,8 +61,8 @@ class AccessControlTestCase(TestCase):
         self.client = APIClient()
         self.base_url = 'http://localhost:8000/'
         self.access_token = ""
-        self.user1_password ="testpassword"
-        self.user2_password ="testpassword"
+        self.user1_password = "testpassword"
+        self.user2_password = "testpassword"
 
         # Create users via API
         self.user1_instance = self.create_user("John", "Doe", "john11.doe@example.com", "testpassword")
@@ -86,7 +95,7 @@ class AccessControlTestCase(TestCase):
             "name": name,
             "description": description
         }
-        #login
+        # login
         self.login(email, password)
         # setup access token credentials  
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
@@ -98,10 +107,9 @@ class AccessControlTestCase(TestCase):
         instance = Organisation.objects.get(orgId=id)
         return instance
 
-#TODO login to access org
     def login(self, email, password):
         url = f"{self.base_url}auth/login"
-        data={"email":email, "password":password}
+        data = {"email": email, "password": password}
         response = self.client.post(url, data, format="json")
         self.access_token = response.json()["data"]["accessToken"]
         return response.json()
@@ -110,7 +118,7 @@ class AccessControlTestCase(TestCase):
         # Add user1 to org1
         self.add_user(self.user1_instance.userId, self.org1.orgId)
         print(self.org1.members)
-        #Add user2 to org2
+        # Add user2 to org2
         self.add_user(self.user2_instance.userId, self.org2.orgId)
 
         # User 1 should have access to org1
@@ -121,7 +129,7 @@ class AccessControlTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
         print(f"---User1 has access to Organisation1- 👤1️⃣🔑🏢1️⃣")
         
-        # User 1 should  have access to org2
+        # User 1 should have access to org2
         response = self.client.get(f'{self.base_url}api/organisations/{self.org2.orgId}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         print(f"---User1 has no access to Organisation2- 👤1️⃣🔑🏢2️⃣")
@@ -139,15 +147,13 @@ class AccessControlTestCase(TestCase):
         print(f"---User2 has access to Organisation2- 👤2️⃣🔑🏢2️⃣")
 
     def add_user(self, userId, orgId):
-        url =f"http://localhost:8000/api/organisations/{orgId}/users"
+        url = f"http://localhost:8000/api/organisations/{orgId}/users"
         data = {
             "userId": userId
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 200)
         print(f"---Added user to organisation - {response.json()}")
-
-
 
 
 class CombinedTestCase(TestCase):
@@ -228,8 +234,7 @@ class CombinedTestCase(TestCase):
         print(f"---Duplication prevented - 🚫📑💡")
         self.assertIn('errors', self.response_data2.json())
         print(f"---Errors handled- 🛡️🐛✔️")
-        
-
 
 if __name__ == '__main__':
     unittest.main()
+
