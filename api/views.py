@@ -168,13 +168,14 @@ def authenticate(request, email, password):
 @permission_classes([IsAuthenticated])
 def get_user(request, id):
     user = request.user
-    if not CustomUser.objects.filter(userId=id).exists():
-        data = {
+    error_data = {
             "status": "Not Found",
             "message": "User not found",
             "statusCode": 404
         }
-        return Response(data, status=status.HTTP_404_NOT_FOUND)
+    if not CustomUser.objects.filter(userId=id).exists():
+        
+        return Response(error_data, status=status.HTTP_404_NOT_FOUND)
 
     lookup_user = CustomUser.objects.get(userId=id)
 
@@ -192,6 +193,7 @@ def get_user(request, id):
         }
         user_response = handle_successful_response(data, message="User Found")
         return Response(user_response)
+    return Response(error_data, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
