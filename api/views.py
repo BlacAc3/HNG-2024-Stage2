@@ -239,7 +239,7 @@ def get_and_create_org(request):
                 "description": org.description,
             }
             list.append(data_to_append)
-        main_data = {"organisation":list}
+        main_data = {"organisations":list}
         return Response(main_data, status = status.HTTP_200_OK)
     
 
